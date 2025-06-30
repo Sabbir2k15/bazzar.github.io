@@ -8,12 +8,12 @@
     "description": "আপনার কেনাকাটার হিসাব রাখার জন্য একটি সহজ এবং আধুনিক অ্যাপ।",
     "icons": [
         {
-            "src": "https://github.com/Sabbir2k15/bazzar.github.io/blob/main/icon-192x192.png",
+            "src": "./icons/icon-192x192.png",
             "type": "image/png",
             "sizes": "192x192"
         },
         {
-            "src": "https://github.com/Sabbir2k15/bazzar.github.io/blob/main/icon-512x512.png",
+            "src": "./icons/icon-512x512.png",
             "type": "image/png",
             "sizes": "512x512"
         }
