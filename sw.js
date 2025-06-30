@@ -1,7 +1,10 @@
-const CACHE_NAME = 'bazar-list-cache-v2';
+const CACHE_NAME = 'bazar-list-cache-v3';
 const urlsToCache = [
-    '/',
-    '/index.html',
+    './',
+    './index.html',
+    './manifest.json',
+    './icons/icon-192x192.png',
+    './icons/icon-512x512.png',
     'https://cdn.tailwindcss.com',
     'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
     'https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;500;600;700&display=swap',
