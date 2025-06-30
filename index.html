@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>আমার বাজারের তালিকা (Expressive UI)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        html, body {
+            overscroll-behavior-y: contain;
+        }
+        body {
+            font-family: 'Anek Bangla', sans-serif;
+            background-color: #1e293b; /* Slate 800 - Deep, dim background */
+        }
+        .main-container {
+            max-width: 700px;
+            width: 100%;
+            background-color: #0f172a; /* Slate 900 - Main container */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .form-input, .form-select {
+            background-color: #1e293b; /* Slate 800 */
+            border: 1px solid #475569; /* Slate 600 */
+            color: #e2e8f0; /* Slate 200 */
+            transition: all 0.2s;
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            width: 100%;
+            font-size: 1rem;
+        }
+        .form-input::placeholder { color: #94a3b8; }
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #8b5cf6; /* Violet 500 */
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+        }
+        .btn {
+            border-radius: 999px; /* Pill shape */
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            padding: 0 1.25rem;
+            border: none;
+        }
+        .btn:hover { transform: translateY(-2px) scale(1.02); }
+        .btn-primary { background-color: #8b5cf6; color: white; }
+        .btn-primary:hover { background-color: #7c3aed; }
+        .btn-secondary { background-color: #334155; color: #cbd5e1; }
+        .btn-secondary:hover { background-color: #475569; }
+        
+        .list-item {
+            position: relative;
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            transition: all 0.2s ease;
+            padding: 1rem;
+            box-shadow: 0 2px 4px 0 rgba(0,0,0,0.1);
+        }
+        .list-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px 0 rgba(0,0,0,0.1);
+            border-color: #475569;
+        }
+        
+        .price-input {
+             width: 70px; padding: 2px 6px; border: 1px solid #8b5cf6;
+             border-radius: 6px; text-align: center; background-color: #4c1d95; color: white; font-size: 0.9rem;
+        }
+        .form-select {
+            -webkit-appearance: none; -moz-appearance: none; appearance: none;
+            background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20"><path stroke="%2394a3b8" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m6 8 4 4 4-4"/></svg>');
+            background-repeat: no-repeat; background-position: right 0.75rem center;
+            background-size: 1.5em 1.5em; padding-right: 2.5rem;
+        }
+        #image-export-area {
+            position: absolute; left: -9999px; top: auto; width: 500px;
+            background: white; padding: 2rem; font-family: 'Anek Bangla', sans-serif;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-2 sm:p-4">
+    <div class="main-container mx-auto rounded-3xl p-3 sm:p-4">
+        
+        <header class="text-center my-5">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-50" style="font-weight: 700;">বাজারের তালিকা</h1>
+            <p class="text-gray-400 mt-2 text-base">আপনার কেনাকাটার হিসাব রাখুন</p>
+        </header>
+
+        <form id="addItemForm" class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5 bg-slate-900/70 p-4 rounded-2xl">
+            <div class="sm:col-span-2">
+                <input type="text" id="itemName" class="form-input" placeholder="পণ্যের নাম লিখুন..." required>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                 <div>
+                    <input type="number" id="itemQuantityAmount" class="form-input" placeholder="পরিমাণ" min="0">
+                 </div>
+                 <div>
+                    <select id="itemQuantityUnit" class="form-select">
+                        <option>টি</option> <option>কেজি</option> <option>গ্রাম</option>
+                        <option>লিটার</option> <option>আটি</option> <option>ডজন</option>
+                        <option>হালি</option> <option>প্যাকেট</option>
+                    </select>
+                 </div>
+            </div>
+            <div>
+                <input type="number" id="itemPrice" class="form-input" placeholder="দাম (৳)" min="0">
+            </div>
+            <div class="sm:col-span-2">
+                <button type="submit" class="btn btn-primary w-full mt-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                    যোগ করুন
+                </button>
+            </div>
+        </form>
+        
+        <div id="itemList" class="space-y-3">
+            <!-- বাজারের তালিকা এখানে দেখানো হবে -->
+        </div>
+
+        <div id="summary" class="mt-5 pt-5 border-t-2 border-dashed border-slate-700">
+            <div class="bg-slate-900/70 p-4 rounded-2xl space-y-3">
+                <h2 class="text-base font-bold text-center text-gray-200 mb-2">হিসাবের সারাংশ</h2>
+                <div>
+                    <input type="text" id="budget-input" class="form-input text-center text-lg font-bold" placeholder="আপনার মোট বাজেট লিখুন" min="0">
+                </div>
+                <div class="flex justify-between items-center bg-slate-700 p-3 rounded-xl">
+                    <span class="font-semibold text-slate-300 text-sm">মোট খরচ:</span>
+                    <span id="totalCost" class="font-bold text-base text-slate-100">০ ৳</span>
+                </div>
+                <div id="remaining-balance-wrapper" class="flex justify-between items-center p-3 rounded-xl">
+                    <span class="font-semibold text-sm">মোট বেঁচেছে:</span>
+                    <span id="remainingBalance" class="font-bold text-xl">০ ৳</span>
+                </div>
+            </div>
+            <div class="mt-4 grid grid-cols-3 gap-2 justify-center">
+                 <button id="shareBtn" class="btn btn-secondary">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1.5" viewBox="0 0 20 20" fill="currentColor"><path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" /></svg>
+                    শেয়ার
+                 </button>
+                 <button id="saveFileBtn" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    সেভ
+                 </button>
+                 <button id="loadFileBtn" class="btn btn-secondary">
+                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                    লোড
+                 </button>
+                 <input type="file" id="fileInput" class="hidden" accept=".txt">
+            </div>
+        </div>
+        
+        <footer class="text-center mt-6">
+            <p class="text-xs text-slate-500" style="font-weight: 500;">Dev : SABBIR</p>
+        </footer>
+
+    </div>
+    
+    <div id="image-export-area"></div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const addItemForm = document.getElementById('addItemForm');
+            const itemNameInput = document.getElementById('itemName');
+            const itemQuantityAmountInput = document.getElementById('itemQuantityAmount');
+            const itemQuantityUnitInput = document.getElementById('itemQuantityUnit');
+            const itemPriceInput = document.getElementById('itemPrice');
+            const itemListDiv = document.getElementById('itemList');
+            
+            const budgetInput = document.getElementById('budget-input');
+            const totalCostSpan = document.getElementById('totalCost');
+            const remainingBalanceSpan = document.getElementById('remainingBalance');
+            const remainingBalanceWrapper = document.getElementById('remaining-balance-wrapper');
+
+            const saveFileBtn = document.getElementById('saveFileBtn');
+            const loadFileBtn = document.getElementById('loadFileBtn');
+            const shareBtn = document.getElementById('shareBtn');
+            const fileInput = document.getElementById('fileInput');
+
+            let items = [];
+            let totalBudget = 0;
+            const STORAGE_KEY_ITEMS = 'shoppingList_expressive_ui_items';
+            const STORAGE_KEY_BUDGET = 'shoppingList_expressive_ui_budget';
+
+            const toBengaliNumber = (engNumber) => {
+                const engDigits = '0123456789';
+                const benDigits = '০১২৩৪৫৬৭৮৯';
+                return String(engNumber).split('').map(digit => engDigits.includes(digit) ? benDigits[digit] : digit).join('');
+            };
+
+            const toEnglishNumber = (benNumber) => {
+                const benDigits = '০১২৩৪৫৬৭৮৯';
+                const engDigits = '0123456789';
+                return String(benNumber).split('').map(digit => benDigits.includes(digit) ? engDigits[benDigits.indexOf(digit)] : digit).join('');
+            };
+
+            function saveData() {
+                localStorage.setItem(STORAGE_KEY_ITEMS, JSON.stringify(items));
+                localStorage.setItem(STORAGE_KEY_BUDGET, totalBudget.toString());
+            }
+
+            function loadData() {
+                const storedItems = localStorage.getItem(STORAGE_KEY_ITEMS);
+                const storedBudget = localStorage.getItem(STORAGE_KEY_BUDGET);
+                items = storedItems ? JSON.parse(storedItems) : [];
+                totalBudget = storedBudget ? parseFloat(storedBudget) : 0;
+                budgetInput.value = totalBudget > 0 ? totalBudget : '';
+            }
+
+            function render() {
+                itemListDiv.innerHTML = '';
+                let totalCost = 0;
+                items.sort((a, b) => a.id - b.id);
+
+                if (items.length === 0) {
+                    itemListDiv.innerHTML = `<div class="text-center text-slate-500 py-8 px-4 bg-slate-800 rounded-lg"><p class="text-sm">আপনার তালিকা এখন খালি।</p></div>`;
+                } else {
+                    items.forEach(item => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'list-item';
+                        const price = parseFloat(toEnglishNumber(item.price)) || 0;
+                        totalCost += price;
+                        const fullQuantity = toBengaliNumber(item.quantity_amount) ? `${toBengaliNumber(item.quantity_amount)} ${item.quantity_unit}` : '';
+
+                        let priceHTML = item.price 
+                            ? `<span class="text-violet-400 font-bold text-base cursor-pointer">${toBengaliNumber(price)} ৳</span>`
+                            : `<span class="text-violet-500 font-semibold text-sm cursor-pointer">(দাম?)</span>`;
+                        
+                        itemDiv.innerHTML = `
+                            <div class="flex-grow pr-5">
+                                <p class="text-slate-100 text-base leading-tight" id="price-section-${item.id}" onclick="window.editPrice(event, ${item.id}, '${item.price || ''}')">
+                                    <span class="font-semibold">${item.name}</span>
+                                    <span class="text-slate-400 text-sm ml-2">${fullQuantity}</span>
+                                    <span class="ml-2">${priceHTML}</span>
+                                </p>
+                            </div>
+                            <button class="absolute top-1.5 right-1.5 text-red-500/50 hover:text-red-500 text-2xl leading-none" onclick="window.deleteItem(${item.id})">&times;</button>
+                        `;
+                        itemListDiv.appendChild(itemDiv);
+                    });
+                }
+                
+                const remainingBalance = totalBudget - totalCost;
+                totalCostSpan.textContent = `${toBengaliNumber(totalCost)} ৳`;
+                remainingBalanceSpan.textContent = `${toBengaliNumber(remainingBalance)} ৳`;
+                
+                remainingBalanceWrapper.classList.remove('bg-green-500/20', 'text-green-300', 'bg-red-500/20', 'text-red-300', 'bg-slate-700', 'text-slate-300');
+                if (remainingBalance > 0 && totalBudget > 0) {
+                    remainingBalanceWrapper.classList.add('bg-green-500/20', 'text-green-300');
+                } else if (remainingBalance < 0) {
+                    remainingBalanceWrapper.classList.add('bg-red-500/20', 'text-red-300');
+                } else {
+                     remainingBalanceWrapper.classList.add('bg-slate-700', 'text-slate-300');
+                }
+            }
+
+            function addItem(e) {
+                e.preventDefault();
+                const name = itemNameInput.value.trim();
+                if (!name) return;
+                items.push({
+                    id: Date.now(), name: name,
+                    quantity_amount: toEnglishNumber(itemQuantityAmountInput.value.trim()),
+                    quantity_unit: itemQuantityUnitInput.value,
+                    price: toEnglishNumber(itemPriceInput.value.trim())
+                });
+                saveData(); render(); addItemForm.reset();
+            }
+
+            window.deleteItem = id => {
+                items = items.filter(i => i.id !== id); saveData(); render();
+            }
+
+            window.editPrice = (event, id, currentPrice) => {
+                const priceSection = document.getElementById(`price-section-${id}`);
+                if (priceSection.querySelector('input')) {
+                    event.stopPropagation();
+                    return;
+                }
+                const priceSpan = priceSection.querySelector('span:last-child');
+                priceSpan.innerHTML = `<input type="text" id="price-input-${id}" value="${currentPrice}" class="price-input" onblur="window.savePrice(${id})" onkeydown="window.handlePriceInputKey(event, ${id})" min="0"/>`;
+                document.getElementById(`price-input-${id}`).focus();
+                event.stopPropagation();
+            }
+
+            window.handlePriceInputKey = (event, id) => { if (event.key === 'Enter' || event.key === 'Escape') event.target.blur(); }
+            
+            window.savePrice = id => {
+                const input = document.getElementById(`price-input-${id}`);
+                if (!input) { render(); return; }
+                const item = items.find(i => i.id === id);
+                if (item) { item.price = toEnglishNumber(input.value.trim()); saveData(); render(); }
+            }
+            
+            budgetInput.addEventListener('input', () => {
+                totalBudget = parseFloat(toEnglishNumber(budgetInput.value)) || 0;
+                saveData();
+                render();
+            });
+
+            function generateFileContent() {
+                let content = `আমার বাজারের তালিকা\n====================\n`;
+                content += `মোট বাজেট: ${toBengaliNumber(totalBudget)} ৳\n\n`;
+                let totalCost = 0;
+                items.forEach((item, index) => {
+                    const price = parseFloat(item.price) || 0;
+                    totalCost += price;
+                    const fullQuantity = item.quantity_amount ? `${toBengaliNumber(item.quantity_amount)} ${item.quantity_unit}`.trim() : 'পরিমাণ নেই';
+                    content += `${index + 1}. ${item.name} | পরিমাণ: ${fullQuantity} | দাম: ${toBengaliNumber(price)} ৳\n`;
+                });
+                content += `\n====================\nসারাংশ:\n`;
+                content += `মোট খরচ: ${toBengaliNumber(totalCost)} ৳\n`;
+                content += `মোট বেঁচেছে: ${toBengaliNumber(totalBudget - totalCost)} ৳\n`;
+                return content;
+            }
+
+            function saveListAsFile() {
+                const blob = new Blob(['\uFEFF' + generateFileContent()], { type: 'text/plain;charset=utf-8' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `bazare-talika-${new Date().toISOString().slice(0,10)}.txt`;
+                link.click();
+            }
+            
+            function parseFileContent(content) {
+                const parsedItems = [];
+                content.split('\n').forEach(line => {
+                    if (line.startsWith('মোট বাজেট:')) {
+                        const budgetMatch = line.match(/([০-৯,]+)/);
+                        if (budgetMatch) totalBudget = parseFloat(toEnglishNumber(budgetMatch[1].replace(/,/g, ''))) || 0;
+                    }
+                    const nameMatch = line.match(/^\d+\.\s(.+?)\s*\|/);
+                    if (nameMatch) {
+                        const newItem = { id: Date.now() + parsedItems.length, name: nameMatch[1].trim() };
+                        const quantMatch = line.match(/পরিমাণ:\s(.+?)\s*\|/);
+                        if(quantMatch && quantMatch[1] !== 'পরিমাণ নেই') {
+                           const [amount, ...unit] = quantMatch[1].trim().split(' ');
+                           newItem.quantity_amount = toEnglishNumber(amount);
+                           newItem.quantity_unit = unit.join(' ');
+                        }
+                        const priceMatch = line.match(/দাম:\s(.+)\s(৳|টাকা)/);
+                        if (priceMatch) newItem.price = toEnglishNumber(priceMatch[1].replace(/,/g, ''));
+                        
+                        parsedItems.push(newItem);
+                    }
+                });
+                items = parsedItems;
+                budgetInput.value = totalBudget > 0 ? toBengaliNumber(totalBudget) : '';
+            }
+
+            function handleFileLoad(event) {
+                const file = event.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = e => { parseFileContent(e.target.result); saveData(); render(); };
+                reader.readAsText(file);
+                event.target.value = '';
+            }
+
+            function generateAndSaveImage() {
+                const exportArea = document.getElementById('image-export-area');
+                let totalCost = 0; let tableRows = '';
+                items.forEach(item => {
+                    const price = parseFloat(item.price) || 0; totalCost += price;
+                    const fullQuantity = item.quantity_amount ? `${toBengaliNumber(item.quantity_amount)} ${item.quantity_unit}` : '-';
+                    tableRows += `<tr><td>${item.name}</td><td>${fullQuantity}</td><td>${price > 0 ? toBengaliNumber(price) : '-'}</td></tr>`;
+                });
+                const date = new Date();
+                const formattedDate = `তারিখ: ${toBengaliNumber(date.getDate())}/${toBengaliNumber(date.getMonth() + 1)}/${toBengaliNumber(date.getFullYear())}`;
+                exportArea.innerHTML = `
+                    <style>#image-export-area{font-family:'Anek Bangla',sans-serif} #image-export-area h1{font-size:2rem;font-weight:700;color:#7c3aed;text-align:center} #image-export-area p{text-align:center;color:#4b5563;margin-bottom:1.5rem} #image-export-area table{width:100%;border-collapse:collapse} #image-export-area th,td{text-align:left;padding:.5rem;border-bottom:1px solid #e5e7eb;color:#1f2937;font-size:1rem} #image-export-area th{color:#7c3aed; font-weight:600;} #image-export-area tr:last-child td{border-bottom:none} #image-export-area .summary{margin-top:1.5rem;padding-top:1rem;border-top:2px dashed #d1d5db;text-align:right;font-size:1rem;font-weight:700;color:#111827}</style>
+                    <div style="background-color:white; padding:1.5rem;">
+                        <h1>বাজারের তালিকা</h1><p>${formattedDate}</p>
+                        <table><thead><tr><th>পণ্যের নাম</th><th>পরিমাণ</th><th>দাম (৳)</th></tr></thead><tbody>${tableRows}</tbody></table>
+                        <div class="summary"><p>মোট বাজেট: ${toBengaliNumber(totalBudget)} ৳</p><p>মোট খরচ: ${toBengaliNumber(totalCost)} ৳</p><p>মোট বেঁচেছে: ${toBengaliNumber(totalBudget - totalCost)} ৳</p></div>
+                    </div>`;
+                html2canvas(document.querySelector("#image-export-area > div"), { scale: 2.5, useCORS: true }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.href = canvas.toDataURL('image/png');
+                    link.download = `bazare-talika-${new Date().toISOString().slice(0,10)}.png`;
+                    link.click();
+                });
+            }
+
+            addItemForm.addEventListener('submit', addItem);
+            saveFileBtn.addEventListener('click', saveListAsFile);
+            loadFileBtn.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', handleFileLoad);
+            shareBtn.addEventListener('click', generateAndSaveImage);
+
+            loadData();
+            render();
+        });
+    </script>
+</body>
+</html>
