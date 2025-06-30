@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>আমার বাজারের তালিকা (Offline)</title>
-    <!-- PWA Theme Color -->
+    <title>আমার বাজারের তালিকা</title>
+    
+    <!-- Manifest এবং Theme Color -->
+    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#007aff">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -24,35 +26,25 @@
             --input-bg-color: #eff0f2;
             --red-border-color: #fecaca;
         }
-
-        html, body {
-            overscroll-behavior-y: contain;
-        }
+        html, body { overscroll-behavior-y: contain; }
         body {
             font-family: 'Anek Bangla', sans-serif;
             background-color: var(--bg-color);
             color: var(--primary-text-color);
         }
-        
         @keyframes popIn {
             0% { opacity: 0; transform: translateY(15px) scale(0.95); }
             80% { opacity: 1; transform: translateY(-5px) scale(1.02); }
             100% { opacity: 1; transform: translateY(0) scale(1); }
         }
-        @keyframes fadeOutScale {
-            from { opacity: 1; transform: scale(1); }
-            to { opacity: 0; transform: scale(0.95); }
-        }
         @keyframes slideInUp {
             from { transform: translateY(100%); } to { transform: translateY(0); }
         }
-
         .main-container {
             width: 100%;
             max-width: 600px;
             animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
-
         .aquamorphic-card {
             background-color: var(--card-bg-color);
             border-radius: 24px;
@@ -61,7 +53,6 @@
             border: 1px solid var(--red-border-color);
             margin-bottom: 20px;
         }
-
         .form-input, .form-select {
             background-color: var(--input-bg-color);
             border: 2px solid transparent;
@@ -80,7 +71,6 @@
             background-color: var(--card-bg-color);
             box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
         }
-
         .btn-m3 {
             border-radius: 18px;
             font-weight: 700;
@@ -101,18 +91,11 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1), 0 8px 12px rgba(0,0,0,0.1);
         }
-        .btn-m3:active {
-            transform: scale(0.96) translateY(0);
-        }
-
-        .btn-primary { 
-            background-color: var(--accent-color);
-        }
-        
+        .btn-m3:active { transform: scale(0.96) translateY(0); }
+        .btn-primary { background-color: var(--accent-color); }
         .btn-share-color { background-image: linear-gradient(45deg, #4f46e5, #7c3aed, #c026d3); }
         .btn-save-color { background-image: linear-gradient(45deg, #059669, #16a34a, #65a30d); }
         .btn-load-color { background-image: linear-gradient(45deg, #ea580c, #f97316, #f59e0b); }
-        
         .list-item {
             position: relative;
             background-color: var(--card-bg-color);
@@ -122,18 +105,12 @@
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
             border: 1px solid var(--red-border-color);
         }
-        .list-item.entering { animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-        .list-item.exiting { animation: fadeOutScale 0.3s ease-out forwards; }
-        .list-item:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); }
-
         .form-select {
             -webkit-appearance: none; -moz-appearance: none; appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236c727e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
             background-repeat: no-repeat; background-position: right 0.75rem center;
             background-size: 1.25em 1.25em; padding-right: 2.5rem;
         }
-        
-        /* Install Prompt Banner */
         #install-banner {
             display: none;
             position: fixed;
@@ -147,13 +124,11 @@
             z-index: 1000;
             animation: slideInUp 0.5s ease-out;
         }
-
         #image-export-area { position: absolute; left: -9999px; top: auto; width: 600px; }
     </style>
 </head>
 <body class="min-h-screen flex items-start sm:items-center justify-center p-2 sm:p-4">
     <div class="main-container">
-        
         <header class="text-center my-6">
             <h1 class="text-4xl sm:text-5xl font-bold" style="font-weight: 700;">বাজারের তালিকা</h1>
         </header>
@@ -197,7 +172,6 @@
         <footer class="text-center my-6"><p class="text-xs text-slate-500 font-medium">Dev: SABBIR</p></footer>
     </div>
     
-    <!-- Install Banner -->
     <div id="install-banner">
         <div class="max-w-screen-lg mx-auto flex items-center justify-between">
             <p class="font-semibold">সেরা অভিজ্ঞতার জন্য অ্যাপ ইনস্টল করুন!</p>
@@ -211,130 +185,55 @@
     <div id="image-export-area"></div>
     
     <script>
-        // PWA and App Logic
-        document.addEventListener('DOMContentLoaded', () => {
-            
-            // --- PWA SETUP ---
-            
-            // 1. Create and register manifest.json
-            const manifest = {
-                "name": "আমার বাজারের তালিকা",
-                "short_name": "বাজারের তালিকা",
-                "start_url": ".",
-                "display": "standalone",
-                "background_color": "#f7f7f9",
-                "theme_color": "#007aff",
-                "description": "আপনার কেনাকাটার হিসাব রাখার জন্য একটি সহজ অ্যাপ।",
-                "icons": [
-                    { "src": "https://placehold.co/192x192/007aff/ffffff?text=Icon", "type": "image/png", "sizes": "192x192" },
-                    { "src": "https://placehold.co/512x512/007aff/ffffff?text=Icon", "type": "image/png", "sizes": "512x512" }
-                ]
-            };
-            const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-            const manifestUrl = URL.createObjectURL(manifestBlob);
-            const linkEl = document.createElement('link');
-            linkEl.rel = 'manifest';
-            linkEl.href = manifestUrl;
-            document.head.appendChild(linkEl);
-
-            // 2. Create and register Service Worker
-            const swCode = `
-                const CACHE_NAME = 'bazar-list-cache-v1';
-                const urlsToCache = [
-                    '/',
-                    'https://cdn.tailwindcss.com',
-                    'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
-                    'https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;500;600;700&display=swap',
-                    'https://fonts.gstatic.com/s/anekbangla/v6/ra_fE7n9Qrfe0xV22p32d_cZ93D2jY1q1g.woff2'
-                ];
-
-                self.addEventListener('install', event => {
-                    event.waitUntil(
-                        caches.open(CACHE_NAME)
-                            .then(cache => {
-                                console.log('Opened cache');
-                                return cache.addAll(urlsToCache);
-                            })
-                    );
-                });
-
-                self.addEventListener('fetch', event => {
-                    event.respondWith(
-                        caches.match(event.request)
-                            .then(response => {
-                                if (response) {
-                                    return response; // Return from cache
-                                }
-                                return fetch(event.request); // Fetch from network
-                            }
-                        )
-                    );
-                });
-
-                self.addEventListener('activate', event => {
-                  const cacheWhitelist = [CACHE_NAME];
-                  event.waitUntil(
-                    caches.keys().then(cacheNames => {
-                      return Promise.all(
-                        cacheNames.map(cacheName => {
-                          if (cacheWhitelist.indexOf(cacheName) === -1) {
-                            return caches.delete(cacheName);
-                          }
-                        })
-                      );
-                    })
-                  );
-                });
-            `;
-            const swBlob = new Blob([swCode], { type: 'application/javascript' });
-            const swUrl = URL.createObjectURL(swBlob);
-
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register(swUrl)
-                    .then(registration => console.log('Service Worker registered with scope:', registration.scope))
+        // --- PWA SETUP ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => console.log('Service Worker registered:', registration.scope))
                     .catch(error => console.log('Service Worker registration failed:', error));
+            });
+        }
+
+        const installBanner = document.getElementById('install-banner');
+        const installBtn = document.getElementById('install-btn');
+        const dismissBtn = document.getElementById('dismiss-btn');
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            if (!localStorage.getItem('bazarListInstallDismissed')) {
+                installBanner.style.display = 'block';
             }
+        });
 
-            // 3. Install Prompt Logic
-            const installBanner = document.getElementById('install-banner');
-            const installBtn = document.getElementById('install-btn');
-            const dismissBtn = document.getElementById('dismiss-btn');
-            let deferredPrompt;
+        installBtn.addEventListener('click', () => {
+            installBanner.style.display = 'none';
+            if(deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        });
 
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                deferredPrompt = e;
-                // Show the install banner only if it has not been dismissed before
-                if (!localStorage.getItem('bazarListInstallDismissed')) {
-                    installBanner.style.display = 'block';
-                }
-            });
+        dismissBtn.addEventListener('click', () => {
+            installBanner.style.display = 'none';
+            localStorage.setItem('bazarListInstallDismissed', 'true');
+        });
+        
+        window.addEventListener('appinstalled', () => {
+            installBanner.style.display = 'none';
+            deferredPrompt = null;
+            console.log('PWA was installed');
+        });
 
-            installBtn.addEventListener('click', () => {
-                installBanner.style.display = 'none';
-                if(deferredPrompt) {
-                    deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then((choiceResult) => {
-                        if (choiceResult.outcome === 'accepted') {
-                            console.log('User accepted the install prompt');
-                        }
-                        deferredPrompt = null;
-                    });
-                }
-            });
-
-            dismissBtn.addEventListener('click', () => {
-                installBanner.style.display = 'none';
-                localStorage.setItem('bazarListInstallDismissed', 'true');
-            });
-            
-            window.addEventListener('appinstalled', () => {
-                installBanner.style.display = 'none';
-                deferredPrompt = null;
-                console.log('PWA was installed');
-            });
-
-            // --- APP LOGIC (unchanged) ---
+        // --- APP LOGIC ---
+        document.addEventListener('DOMContentLoaded', () => {
+            // (The rest of the app's JavaScript logic is unchanged and goes here)
             const addItemForm = document.getElementById('addItemForm');
             const itemNameInput = document.getElementById('itemName');
             const itemQuantityAmountInput = document.getElementById('itemQuantityAmount');
@@ -342,12 +241,10 @@
             const itemPriceInput = document.getElementById('itemPrice');
             const itemListDiv = document.getElementById('itemList');
             const emptyListPlaceholder = document.getElementById('emptyListPlaceholder');
-            
             const budgetInput = document.getElementById('budget-input');
             const totalCostSpan = document.getElementById('totalCost');
             const remainingBalanceSpan = document.getElementById('remainingBalance');
             const remainingBalanceWrapper = document.getElementById('remaining-balance-wrapper');
-
             const saveFileBtn = document.getElementById('saveFileBtn');
             const loadFileBtn = document.getElementById('loadFileBtn');
             const shareBtn = document.getElementById('shareBtn');
@@ -390,10 +287,8 @@
             function updateSummary() {
                 const totalCost = items.reduce((sum, item) => sum + (parseFloat(toEnglishNumber(item.price)) || 0), 0);
                 const remainingBalance = totalBudget - totalCost;
-
                 totalCostSpan.textContent = `${toBengaliNumber(totalCost)} ৳`;
                 remainingBalanceSpan.textContent = `${toBengaliNumber(remainingBalance)} ৳`;
-                
                 remainingBalanceWrapper.className = 'flex justify-between items-center p-3 rounded-lg transition-all duration-300';
                 if (remainingBalance >= 0 && totalBudget > 0) {
                     remainingBalanceWrapper.classList.add('bg-green-100', 'text-green-800');
@@ -402,7 +297,6 @@
                 } else {
                      remainingBalanceWrapper.classList.add('bg-gray-100', 'text-slate-800');
                 }
-                
                 emptyListPlaceholder.classList.toggle('hidden', items.length > 0);
             }
 
@@ -410,10 +304,8 @@
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'list-item';
                 itemDiv.dataset.id = item.id;
-                
                 const price = parseFloat(toEnglishNumber(item.price)) || 0;
                 const fullQuantity = toBengaliNumber(item.quantity_amount) ? `${toBengaliNumber(item.quantity_amount)} ${item.quantity_unit}` : '';
-                
                 itemDiv.innerHTML = `
                     <div class="flex items-center">
                         <div class="flex-grow pr-4">
@@ -424,8 +316,7 @@
                            <p class="font-bold text-lg text-blue-600">${toBengaliNumber(price)} ৳</p>
                            <button class="text-red-500/60 hover:text-red-600 text-2xl leading-none -mr-2 mt-1" onclick="window.deleteItem(${item.id})">&times;</button>
                         </div>
-                    </div>
-                `;
+                    </div>`;
                 return itemDiv;
             }
 
@@ -449,12 +340,10 @@
                     price: toEnglishNumber(itemPriceInput.value.trim())
                 };
                 items.push(newItem);
-                
                 const itemDiv = createItemElement(newItem);
                 itemDiv.classList.add('entering');
                 itemListDiv.appendChild(itemDiv);
                 itemDiv.addEventListener('animationend', () => itemDiv.classList.remove('entering'), { once: true });
-
                 saveData(); 
                 updateSummary(); 
                 addItemForm.reset();
@@ -484,7 +373,6 @@
                 const exportArea = document.getElementById('image-export-area');
                 let totalCost = 0;
                 let itemsHTML = '';
-                
                 if (items.length === 0) {
                     itemsHTML = `<div style="text-align: center; padding: 20px; color: #888;">তালিকাটি খালি।</div>`;
                 } else {
@@ -498,17 +386,13 @@
                                     <p style="font-size: 0.9rem; color: #777; margin: 2px 0 0 0;">পরিমাণ: ${fullQuantity}</p>
                                 </div>
                                 <p style="font-weight: 700; font-size: 1.1rem; color: #1c1c1e; margin: 0;">${price > 0 ? toBengaliNumber(price) + ' ৳' : '-'}</p>
-                            </div>
-                        `;
+                            </div>`;
                     });
                 }
-
                 const date = new Date();
                 const formattedDate = `তারিখ: ${toBengaliNumber(date.getDate())}/${toBengaliNumber(date.getMonth() + 1)}/${toBengaliNumber(date.getFullYear())}`;
                 const remainingBalance = totalBudget - totalCost;
-                
                 const remainingColor = remainingBalance < 0 ? '#d93025' : '#1e8e3e';
-
                 exportArea.innerHTML = `
                     <style>
                         @import url('https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;500;600;700&display=swap');
@@ -550,9 +434,7 @@
                     </div>`;
 
                 html2canvas(exportArea.querySelector(".receipt-premium"), {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: null,
+                    scale: 2, useCORS: true, backgroundColor: null,
                     onclone: (doc) => {
                         const style = doc.createElement('style');
                         style.innerHTML = `@import url('https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;500;600;700&display=swap'); .receipt-premium { font-family: 'Anek Bangla', sans-serif !important; }`;
@@ -613,7 +495,6 @@
                         const priceMatch = line.match(/দাম:\s([০-৯,.]+)/);
                         if (priceMatch) newItem.price = toEnglishNumber(priceMatch[1].replace(/,/g, ''));
                         else newItem.price = '';
-                        
                         parsedItems.push(newItem);
                     }
                 });
@@ -632,14 +513,12 @@
                 event.target.value = '';
             }
 
-            // Attaching event listeners
             addItemForm.addEventListener('submit', addItem);
             saveFileBtn.addEventListener('click', saveListAsFile);
             loadFileBtn.addEventListener('click', () => fileInput.click());
             fileInput.addEventListener('change', handleFileLoad);
             shareBtn.addEventListener('click', generateAndSaveImage);
             
-            // Initial Load
             loadData();
             renderInitialList();
         });
