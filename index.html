@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>আমার বাজারের তালিকা</title>
+    <title>আমার বাজারের তালিকা (by Sabbir)</title>
     
     <!-- Manifest এবং Theme Color -->
     <link rel="manifest" href="manifest.json">
@@ -188,7 +188,7 @@
         // --- PWA SETUP ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
+                navigator.serviceWorker.register('./sw.js')
                     .then(registration => console.log('Service Worker registered:', registration.scope))
                     .catch(error => console.log('Service Worker registration failed:', error));
             });
@@ -233,7 +233,6 @@
 
         // --- APP LOGIC ---
         document.addEventListener('DOMContentLoaded', () => {
-            // (The rest of the app's JavaScript logic is unchanged and goes here)
             const addItemForm = document.getElementById('addItemForm');
             const itemNameInput = document.getElementById('itemName');
             const itemQuantityAmountInput = document.getElementById('itemQuantityAmount');
@@ -341,9 +340,6 @@
                 };
                 items.push(newItem);
                 const itemDiv = createItemElement(newItem);
-                itemDiv.classList.add('entering');
-                itemListDiv.appendChild(itemDiv);
-                itemDiv.addEventListener('animationend', () => itemDiv.classList.remove('entering'), { once: true });
                 saveData(); 
                 updateSummary(); 
                 addItemForm.reset();
@@ -353,13 +349,10 @@
             window.deleteItem = id => {
                 const itemDiv = itemListDiv.querySelector(`[data-id='${id}']`);
                 if (itemDiv) {
-                    itemDiv.classList.add('exiting');
-                    itemDiv.addEventListener('animationend', () => {
-                        items = items.filter(i => i.id !== id);
-                        itemDiv.remove();
-                        saveData(); 
-                        updateSummary();
-                    }, { once: true });
+                    items = items.filter(i => i.id !== id);
+                    itemDiv.remove();
+                    saveData(); 
+                    updateSummary();
                 }
             }
             
@@ -406,122 +399,4 @@
                         }
                     </style>
                     <div class="receipt-premium">
-                        <div style="text-align: center; border-bottom: 2px dashed #e0e0e0; padding-bottom: 15px; margin-bottom: 20px;">
-                            <h1 style="font-size: 2.5rem; font-weight: 700; color: #111; margin: 0;">বাজারের রশিদ</h1>
-                            <p style="color: #666; font-size: 1rem; margin-top: 5px;">${formattedDate}</p>
-                        </div>
-                        <div style="margin-bottom: 25px;">
-                            <div style="display: flex; justify-content: space-between; font-size: 1.1rem; padding: 8px 0;">
-                                <span style="color: #555;">পণ্যের নাম</span>
-                                <span style="color: #555;">দাম</span>
-                            </div>
-                            ${itemsHTML}
-                        </div>
-                        <div style="padding-top: 20px; border-top: 2px dashed #e0e0e0;">
-                             <div style="display: flex; justify-content: space-between; font-size: 1.1rem; margin-bottom: 8px;">
-                                <span style="font-weight: 500; color: #444;">মোট বাজেট:</span>
-                                <span style="font-weight: 600;">${totalBudget > 0 ? toBengaliNumber(totalBudget) + ' ৳' : 'N/A'}</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; font-size: 1.1rem; margin-bottom: 12px;">
-                                <span style="font-weight: 500; color: #444;">মোট খরচ:</span>
-                                <span style="font-weight: 600;">${toBengaliNumber(totalCost)} ৳</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; font-size: 1.4rem; font-weight: 700; color: ${remainingColor}; background-color: ${remainingColor}20; padding: 10px; border-radius: 8px;">
-                                <span>অবশিষ্ট:</span>
-                                <span>${toBengaliNumber(remainingBalance)} ৳</span>
-                            </div>
-                        </div>
-                    </div>`;
-
-                html2canvas(exportArea.querySelector(".receipt-premium"), {
-                    scale: 2, useCORS: true, backgroundColor: null,
-                    onclone: (doc) => {
-                        const style = doc.createElement('style');
-                        style.innerHTML = `@import url('https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;500;600;700&display=swap'); .receipt-premium { font-family: 'Anek Bangla', sans-serif !important; }`;
-                        doc.head.appendChild(style);
-                    }
-                }).then(canvas => {
-                    const link = document.createElement('a');
-                    link.href = canvas.toDataURL('image/png');
-                    link.download = `bazare-roshid-${new Date().toISOString().slice(0,10)}.png`;
-                    link.click();
-                });
-            }
-
-            function generateFileContent() {
-                let content = `আমার বাজারের তালিকা\n====================\n`;
-                content += `মোট বাজেট: ${toBengaliNumber(totalBudget)} ৳\n\n`;
-                let totalCost = 0;
-                items.forEach((item, index) => {
-                    const price = parseFloat(toEnglishNumber(item.price)) || 0;
-                    totalCost += price;
-                    const fullQuantity = item.quantity_amount ? `${toBengaliNumber(item.quantity_amount)} ${item.quantity_unit}`.trim() : 'পরিমাণ নেই';
-                    content += `${toBengaliNumber(index + 1)}. ${item.name} | পরিমাণ: ${fullQuantity} | দাম: ${toBengaliNumber(price)} ৳\n`;
-                });
-                content += `\n====================\nসারাংশ:\n`;
-                content += `মোট খরচ: ${toBengaliNumber(totalCost)} ৳\n`;
-                content += `মোট বেঁচেছে: ${toBengaliNumber(totalBudget - totalCost)} ৳\n`;
-                return content;
-            }
-
-            function saveListAsFile() {
-                const blob = new Blob(['\uFEFF' + generateFileContent()], { type: 'text/plain;charset=utf-8' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `bazare-talika-${new Date().toISOString().slice(0,10)}.txt`;
-                link.click();
-            }
-            
-            function parseFileContent(content) {
-                const parsedItems = [];
-                let parsedBudget = 0;
-                content.split('\n').forEach(line => {
-                    if (line.startsWith('মোট বাজেট:')) {
-                        const budgetMatch = line.match(/([০-৯,.]+)/);
-                        if (budgetMatch) parsedBudget = parseFloat(toEnglishNumber(budgetMatch[1].replace(/,/g, ''))) || 0;
-                    }
-                    const nameMatch = line.match(/^\d+\.\s(.+?)\s*\|/);
-                    if (nameMatch) {
-                        const newItem = { id: Date.now() + parsedItems.length, name: nameMatch[1].trim() };
-                        const quantMatch = line.match(/পরিমাণ:\s(.+?)\s*\|/);
-                        if(quantMatch && quantMatch[1] !== 'পরিমাণ নেই') {
-                           const [amount, ...unit] = quantMatch[1].trim().split(' ');
-                           newItem.quantity_amount = toEnglishNumber(amount);
-                           newItem.quantity_unit = unit.join(' ');
-                        } else {
-                           newItem.quantity_amount = '';
-                           newItem.quantity_unit = 'টি';
-                        }
-                        const priceMatch = line.match(/দাম:\s([০-৯,.]+)/);
-                        if (priceMatch) newItem.price = toEnglishNumber(priceMatch[1].replace(/,/g, ''));
-                        else newItem.price = '';
-                        parsedItems.push(newItem);
-                    }
-                });
-                items = parsedItems;
-                totalBudget = parsedBudget;
-                budgetInput.value = totalBudget > 0 ? toBengaliNumber(totalBudget) : '';
-                saveData();
-                renderInitialList();
-            }
-
-            function handleFileLoad(event) {
-                const file = event.target.files[0]; if (!file) return;
-                const reader = new FileReader();
-                reader.onload = e => { parseFileContent(e.target.result); };
-                reader.readAsText(file, 'utf-8');
-                event.target.value = '';
-            }
-
-            addItemForm.addEventListener('submit', addItem);
-            saveFileBtn.addEventListener('click', saveListAsFile);
-            loadFileBtn.addEventListener('click', () => fileInput.click());
-            fileInput.addEventListener('change', handleFileLoad);
-            shareBtn.addEventListener('click', generateAndSaveImage);
-            
-            loadData();
-            renderInitialList();
-        });
-    </script>
-</body>
-</html>
+                        <
