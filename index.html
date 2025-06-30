@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>আমার বাজারের তালিকা (Material 3 ডিজাইন)</title>
+    <title>আমার বাজারের তালিকা (Offline)</title>
+    <!-- PWA Theme Color -->
+    <meta name="theme-color" content="#007aff">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,7 +22,7 @@
             --accent-color-hover: #3395ff;
             --border-color: #e5e5e7;
             --input-bg-color: #eff0f2;
-            --red-border-color: #fecaca; /* খুবই হালকা লাল বর্ডারের রঙ */
+            --red-border-color: #fecaca;
         }
 
         html, body {
@@ -40,6 +43,9 @@
             from { opacity: 1; transform: scale(1); }
             to { opacity: 0; transform: scale(0.95); }
         }
+        @keyframes slideInUp {
+            from { transform: translateY(100%); } to { transform: translateY(0); }
+        }
 
         .main-container {
             width: 100%;
@@ -52,7 +58,7 @@
             border-radius: 24px;
             padding: 20px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-            border: 1px solid var(--red-border-color); /* লাল বর্ডার যোগ করা হয়েছে */
+            border: 1px solid var(--red-border-color);
             margin-bottom: 20px;
         }
 
@@ -75,9 +81,8 @@
             box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.15);
         }
 
-        /* Material 3 স্টাইলের বাটন */
         .btn-m3 {
-            border-radius: 18px; /* M3 স্টাইল রাউন্ডেড কর্নার */
+            border-radius: 18px;
             font-weight: 700;
             color: white;
             cursor: pointer;
@@ -102,7 +107,6 @@
 
         .btn-primary { 
             background-color: var(--accent-color);
-            color: white;
         }
         
         .btn-share-color { background-image: linear-gradient(45deg, #4f46e5, #7c3aed, #c026d3); }
@@ -116,7 +120,7 @@
             transition: all 0.3s ease;
             padding: 1rem;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
-            border: 1px solid var(--red-border-color); /* লাল বর্ডার যোগ করা হয়েছে */
+            border: 1px solid var(--red-border-color);
         }
         .list-item.entering { animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
         .list-item.exiting { animation: fadeOutScale 0.3s ease-out forwards; }
@@ -128,6 +132,22 @@
             background-repeat: no-repeat; background-position: right 0.75rem center;
             background-size: 1.25em 1.25em; padding-right: 2.5rem;
         }
+        
+        /* Install Prompt Banner */
+        #install-banner {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #2c2c2e;
+            color: white;
+            padding: 16px;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideInUp 0.5s ease-out;
+        }
+
         #image-export-area { position: absolute; left: -9999px; top: auto; width: 600px; }
     </style>
 </head>
@@ -167,9 +187,9 @@
                 </div>
             </div>
             <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                 <button id="shareBtn" class="btn-m3 btn-share-color"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" /></svg>শেয়ার</button>
-                 <button id="saveFileBtn" class="btn-m3 btn-save-color"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>সেভ</button>
-                 <button id="loadFileBtn" class="btn-m3 btn-load-color"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>লোড</button>
+                 <button id="shareBtn" class="btn-m3 btn-share-color">শেয়ার</button>
+                 <button id="saveFileBtn" class="btn-m3 btn-save-color">সেভ</button>
+                 <button id="loadFileBtn" class="btn-m3 btn-load-color">লোড</button>
                  <input type="file" id="fileInput" class="hidden" accept=".txt">
             </div>
         </div>
@@ -177,10 +197,144 @@
         <footer class="text-center my-6"><p class="text-xs text-slate-500 font-medium">Dev: SABBIR</p></footer>
     </div>
     
+    <!-- Install Banner -->
+    <div id="install-banner">
+        <div class="max-w-screen-lg mx-auto flex items-center justify-between">
+            <p class="font-semibold">সেরা অভিজ্ঞতার জন্য অ্যাপ ইনস্টল করুন!</p>
+            <div>
+                <button id="install-btn" class="bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg mr-2">ইনস্টল</button>
+                <button id="dismiss-btn" class="bg-gray-600 text-white font-bold py-2 px-4 rounded-lg">&times;</button>
+            </div>
+        </div>
+    </div>
+    
     <div id="image-export-area"></div>
     
     <script>
+        // PWA and App Logic
         document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- PWA SETUP ---
+            
+            // 1. Create and register manifest.json
+            const manifest = {
+                "name": "আমার বাজারের তালিকা",
+                "short_name": "বাজারের তালিকা",
+                "start_url": ".",
+                "display": "standalone",
+                "background_color": "#f7f7f9",
+                "theme_color": "#007aff",
+                "description": "আপনার কেনাকাটার হিসাব রাখার জন্য একটি সহজ অ্যাপ।",
+                "icons": [
+                    { "src": "https://placehold.co/192x192/007aff/ffffff?text=Icon", "type": "image/png", "sizes": "192x192" },
+                    { "src": "https://placehold.co/512x512/007aff/ffffff?text=Icon", "type": "image/png", "sizes": "512x512" }
+                ]
+            };
+            const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+            const manifestUrl = URL.createObjectURL(manifestBlob);
+            const linkEl = document.createElement('link');
+            linkEl.rel = 'manifest';
+            linkEl.href = manifestUrl;
+            document.head.appendChild(linkEl);
+
+            // 2. Create and register Service Worker
+            const swCode = `
+                const CACHE_NAME = 'bazar-list-cache-v1';
+                const urlsToCache = [
+                    '/',
+                    'https://cdn.tailwindcss.com',
+                    'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+                    'https://fonts.googleapis.com/css2?family=Anek+Bangla:wght@400;500;600;700&display=swap',
+                    'https://fonts.gstatic.com/s/anekbangla/v6/ra_fE7n9Qrfe0xV22p32d_cZ93D2jY1q1g.woff2'
+                ];
+
+                self.addEventListener('install', event => {
+                    event.waitUntil(
+                        caches.open(CACHE_NAME)
+                            .then(cache => {
+                                console.log('Opened cache');
+                                return cache.addAll(urlsToCache);
+                            })
+                    );
+                });
+
+                self.addEventListener('fetch', event => {
+                    event.respondWith(
+                        caches.match(event.request)
+                            .then(response => {
+                                if (response) {
+                                    return response; // Return from cache
+                                }
+                                return fetch(event.request); // Fetch from network
+                            }
+                        )
+                    );
+                });
+
+                self.addEventListener('activate', event => {
+                  const cacheWhitelist = [CACHE_NAME];
+                  event.waitUntil(
+                    caches.keys().then(cacheNames => {
+                      return Promise.all(
+                        cacheNames.map(cacheName => {
+                          if (cacheWhitelist.indexOf(cacheName) === -1) {
+                            return caches.delete(cacheName);
+                          }
+                        })
+                      );
+                    })
+                  );
+                });
+            `;
+            const swBlob = new Blob([swCode], { type: 'application/javascript' });
+            const swUrl = URL.createObjectURL(swBlob);
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register(swUrl)
+                    .then(registration => console.log('Service Worker registered with scope:', registration.scope))
+                    .catch(error => console.log('Service Worker registration failed:', error));
+            }
+
+            // 3. Install Prompt Logic
+            const installBanner = document.getElementById('install-banner');
+            const installBtn = document.getElementById('install-btn');
+            const dismissBtn = document.getElementById('dismiss-btn');
+            let deferredPrompt;
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                // Show the install banner only if it has not been dismissed before
+                if (!localStorage.getItem('bazarListInstallDismissed')) {
+                    installBanner.style.display = 'block';
+                }
+            });
+
+            installBtn.addEventListener('click', () => {
+                installBanner.style.display = 'none';
+                if(deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted the install prompt');
+                        }
+                        deferredPrompt = null;
+                    });
+                }
+            });
+
+            dismissBtn.addEventListener('click', () => {
+                installBanner.style.display = 'none';
+                localStorage.setItem('bazarListInstallDismissed', 'true');
+            });
+            
+            window.addEventListener('appinstalled', () => {
+                installBanner.style.display = 'none';
+                deferredPrompt = null;
+                console.log('PWA was installed');
+            });
+
+            // --- APP LOGIC (unchanged) ---
             const addItemForm = document.getElementById('addItemForm');
             const itemNameInput = document.getElementById('itemName');
             const itemQuantityAmountInput = document.getElementById('itemQuantityAmount');
@@ -412,7 +566,6 @@
                 });
             }
 
-            // Other functions (unchanged)
             function generateFileContent() {
                 let content = `আমার বাজারের তালিকা\n====================\n`;
                 content += `মোট বাজেট: ${toBengaliNumber(totalBudget)} ৳\n\n`;
