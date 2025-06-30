@@ -1,1 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Redirecting...</title>
+    <script type="text/javascript">
+      // Don't check for search, etc.
+      var uri = window.location.toString();
+      if (uri.indexOf("?") > 0) {
+        var clean_uri = uri.substring(0, uri.indexOf("?"));
+        window.history.replaceState({}, document.title, clean_uri);
+      }
+      
+      var path = window.location.pathname;
+      var isFile = /\/[^/]+\.[^/]+$/.test(path);
+      
+      if (path.startsWith('/bazarer-talika/')) { // এখানে আপনার রিপোজিটরির নাম দিন
+        var newPath = path.replace('/bazarer-talika', '');
+        window.location.replace(window.location.protocol + '//' + window.location.host + newPath);
+      } else if (!isFile) {
+        window.location.replace(window.location.protocol + '//' + window.location.host);
+      }
+    </script>
+  </head>
+  <body>
+    If you are not redirected automatically, follow this <a href="/">link to the main page</a>.
+  </body>
+</html>
 
